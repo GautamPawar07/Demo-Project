@@ -97,6 +97,29 @@ export default class ProfilesController {
       const { name, mobileNumber, gender, dateOfBirth } =
         await request.validate(ProfileValidator);
 
+      const DuplicateMobileNumber = await Profile.findBy(
+        "user_id",
+        auth.user.id
+      );
+
+      if (DuplicateMobileNumber === null) {
+        return response.status(400).json({
+          message: "Profile is not yet created",
+        });
+      }
+
+      if (DuplicateMobileNumber.mobileNumber !== mobileNumber) {
+        const copyMobileNumber = await Profile.findBy("mobile", mobileNumber);
+
+        console.log(copyMobileNumber);
+
+        if (copyMobileNumber !== null) {
+          return response.status(400).json({
+            message: "Mobile number already exists",
+          });
+        }
+      }
+
       await Profile.query().where("user_id", auth.user.id).update({
         name,
         mobileNumber,
@@ -104,7 +127,7 @@ export default class ProfilesController {
         dateOfBirth,
       });
 
-      return response.status(201).json({
+      return response.status(200).json({
         message: "Updated user Successfully",
       });
     } catch (error) {
