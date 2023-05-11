@@ -31,12 +31,14 @@ export default class ProfileValidator {
       rules.regex(/^[0-9]{10}$/),
       rules.minLength(10),
       rules.maxLength(10),
-      rules.unique({ table: "profiles", column: "mobile_number" }),
+      rules.unique({ table: "profiles", column: "mobile" }),
     ]),
 
     gender: schema.enum(["MALE", "FEMALE"], [rules.required()]),
 
-    dateOfBirth: schema.date(),
+    dateOfBirth: schema.date({
+      format: "dd-MM-yyyy",
+    }),
   });
 
   /**
@@ -69,6 +71,4 @@ export default class ProfileValidator {
 
     "dateOfBirth.date": "date must be in  valid date format",
   };
-
- 
 }
