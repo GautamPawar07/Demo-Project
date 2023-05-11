@@ -3,7 +3,7 @@ import Profile from "App/Models/Profile";
 import User from "App/Models/User";
 import moment from "moment";
 
-export default class ProfilesController {
+class ProfilesController {
   public async getProfile({ auth, response }) {
     try {
       const userData = await auth.user.id;
@@ -21,7 +21,7 @@ export default class ProfilesController {
         dateOfBirth: profile?.dateOfBirth.toLocaleDateString(),
       };
 
-      return userProfile;
+      return response.json(userProfile);
     } catch (error) {
       return response.status(400).json(error);
     }
@@ -34,16 +34,26 @@ export default class ProfilesController {
       const { name, mobileNumber, gender, dateOfBirth } =
         await request.validate(ProfileValidator);
 
+      const existing = await Profile.findBy("user_id", userData);
+
+      if (existing !== null) {
+        return response.json({
+          message: "User profile is already created",
+        });
+      }
+
       const duplicateMobileNumber = await Profile.findBy(
         "mobile",
         mobileNumber
       );
 
-      const age = moment().diff(new Date(dateOfBirth), "years");
+      const date = moment(new Date(dateOfBirth), "DD-MM-YYYY");
 
-      if (age < 18 || age > 100) {
+      const today = moment();
+
+      if (date.isAfter(today)) {
         return response.status(400).json({
-          message: "Age should between 18 to 100",
+          message: "Date entered is ahead of today's date",
         });
       } else if (duplicateMobileNumber !== null) {
         return response.status(400).json({
@@ -60,22 +70,20 @@ export default class ProfilesController {
 
       return response.status(201).json(profile);
     } catch (error) {
-      console.log(error);
-
       return response.status(400).json(error);
     }
   }
 
   public async deleteProfile({ request, auth, response }) {
-    const mobileNumber = request.input("mobileNumber");
+    const { mobileNumber } = await request.validate(ProfileValidator);
 
-    const profile = await Profile.findBy("user_id", auth.user.id);
+    const Userprofile = await Profile.findBy("user_id", auth.user.id);
 
     try {
-      if (mobileNumber === profile?.mobileNumber) {
-        const user = await User.findBy("id", profile?.userId);
+      if (mobileNumber === Userprofile?.mobileNumber) {
+        const user = await User.findBy("id", Userprofile?.userId);
 
-        await profile?.delete();
+        await Userprofile?.delete();
 
         await user?.delete();
 
@@ -97,42 +105,39 @@ export default class ProfilesController {
       const { name, mobileNumber, gender, dateOfBirth } =
         await request.validate(ProfileValidator);
 
-      const DuplicateMobileNumber = await Profile.findBy(
-        "user_id",
-        auth.user.id
-      );
+      const userId = auth.user.id;
 
-      if (DuplicateMobileNumber === null) {
+      const existingProfile = await Profile.findBy("user_id", userId);
+
+      if (!existingProfile) {
         return response.status(400).json({
           message: "Profile is not yet created",
         });
       }
 
-      if (DuplicateMobileNumber.mobileNumber !== mobileNumber) {
-        const copyMobileNumber = await Profile.findBy("mobile", mobileNumber);
+      if (existingProfile.mobileNumber !== mobileNumber) {
+        const DuplicateProfile = await Profile.findBy("mobile", mobileNumber);
 
-        console.log(copyMobileNumber);
-
-        if (copyMobileNumber !== null) {
+        if (DuplicateProfile !== null) {
           return response.status(400).json({
             message: "Mobile number already exists",
           });
         }
+      } else {
+        await Profile.query().where("user_id", userId).update({
+          name,
+          mobileNumber,
+          gender,
+          dateOfBirth,
+        });
+
+        return response.status(200).json({
+          message: "Updated user Successfully",
+        });
       }
-
-      await Profile.query().where("user_id", auth.user.id).update({
-        name,
-        mobileNumber,
-        gender,
-        dateOfBirth,
-      });
-
-      return response.status(200).json({
-        message: "Updated user Successfully",
-      });
     } catch (error) {
-      console.log(error);
       return response.status(400).json(error);
     }
   }
 }
+export default ProfilesController;
