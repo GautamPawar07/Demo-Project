@@ -18,8 +18,21 @@
 |
 */
 
-import Route from '@ioc:Adonis/Core/Route'
+import Route from "@ioc:Adonis/Core/Route";
 
-Route.get('/', async () => {
-  return { hello: 'world' }
-})
+Route.post("/register", "AuthController.register");
+
+Route.post("/login", "AuthController.login");
+
+Route.group(() => {
+  // user
+  Route.post("/logout", "AuthController.logout");
+
+  Route.group(() => {
+    // profile
+    Route.post("/", "ProfilesController.createProfile");
+    Route.delete("/", "ProfilesController.deleteProfile");
+    Route.put("/", "ProfilesController.updateProfile");
+    Route.get("/", "ProfilesController.getProfile");
+  }).prefix("/user/profile");
+}).middleware(["auth"]);
