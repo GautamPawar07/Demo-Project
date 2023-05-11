@@ -28,8 +28,8 @@ export default class UserValidator {
 
     password: schema.string({}, [
       rules.minLength(8),
-      rules.maxLength(30),
-      rules.regex(/^[a-zA-Z0-9]+$/),
+      rules.maxLength(16),
+      rules.regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d]{8,16}$/),
     ]),
   });
 

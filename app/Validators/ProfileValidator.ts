@@ -31,7 +31,6 @@ export default class ProfileValidator {
       rules.regex(/^[0-9]{10}$/),
       rules.minLength(10),
       rules.maxLength(10),
-      rules.unique({ table: "profiles", column: "mobile" }),
     ]),
 
     gender: schema.enum(["MALE", "FEMALE"], [rules.required()]),
@@ -64,8 +63,6 @@ export default class ProfileValidator {
     "mobileNumber.minLength": "Mobile number must contain 10 digits ",
 
     "mobileNumber.maxLength": "Mobile number must contain 10 digits ",
-
-    "mobileNumber.unique": "Mobile number already exists",
 
     "gender.required": "gender in required",
 
