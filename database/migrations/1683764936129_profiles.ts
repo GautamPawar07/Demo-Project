@@ -15,7 +15,7 @@ export default class extends BaseSchema {
       table.string("name");
       table.string("mobile");
       table.string("gender");
-      table.date("dateOfBirth");
+      table.date("date_Of_Birth");
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
