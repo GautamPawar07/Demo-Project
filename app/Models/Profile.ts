@@ -10,13 +10,13 @@ export default class Profile extends BaseModel {
   @column()
   public name: string;
 
-  @column({ columnName: "mobile_number" })
+  @column({ columnName: "mobile" })
   public mobileNumber: string;
 
   @column()
   public gender: string;
 
-  @column()
+  @column({ columnName: "date_Of_Birth" })
   public dateOfBirth: Date;
 
   @column.dateTime({ autoCreate: true })
