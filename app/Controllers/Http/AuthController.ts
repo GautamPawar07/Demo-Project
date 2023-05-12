@@ -4,11 +4,14 @@ import User from "App/Models/User";
 class AuthController {
   public async register({ request, response }) {
     try {
-      const { email, password } = await request.validate(UserValidator);
+      const { email, password, rememberMeToken } = await request.validate(
+        UserValidator
+      );
 
       const user = await User.create({
         email,
         password,
+        rememberMeToken,
       });
 
       return response.status(201).json(user);
