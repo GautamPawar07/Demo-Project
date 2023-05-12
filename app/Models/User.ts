@@ -20,7 +20,7 @@ export default class User extends BaseModel {
   public password: string;
 
   @column()
-  public rememberMeToken: string | null;
+  public rememberMeToken: boolean | null;
 
   @column.dateTime({ autoCreate: true })
   public createdAt: DateTime;
