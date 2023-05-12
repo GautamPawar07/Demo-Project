@@ -7,9 +7,9 @@ class ProfileValidator {
   public schema = schema.create({
     name: schema.string({}, [rules.minLength(3), rules.maxLength(30)]),
 
-    mobileNumber: schema.string({}, [
+    mobile: schema.string({}, [
       rules.required(),
-      rules.regex(/^[0-9]{10}$/),
+      rules.regex(/^[6-9]{10}$/),
       rules.minLength(10),
       rules.maxLength(10),
     ]),
@@ -26,13 +26,13 @@ class ProfileValidator {
 
     "name.maxLength": "Name must contain maximum 30 characters",
 
-    "mobileNumber.required": "Mobile Number is required",
+    "mobile.required": "Mobile Number is required",
 
-    "mobileNumber.regex": "Mobile number must contain 10 digits ",
+    "mobile.regex": "Mobile number must contain 10 digits ",
 
-    "mobileNumber.minLength": "Mobile number must contain 10 digits ",
+    "mobile.minLength": "Mobile number must contain 10 digits ",
 
-    "mobileNumber.maxLength": "Mobile number must contain 10 digits ",
+    "mobile.maxLength": "Mobile number must contain 10 digits ",
 
     "gender.required": "gender in required",
 
