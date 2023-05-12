@@ -14,8 +14,8 @@ export default class extends BaseSchema {
         .onDelete("cascade");
       table.string("name");
       table.string("mobile");
-      table.string("gender");
-      table.date("date_Of_Birth");
+      table.enum("gender", ["MALE", "FEMALE"]);
+      table.dateTime("birth_date");
 
       /**
        * Uses timestamptz for PostgreSQL and DATETIME2 for MSSQL
