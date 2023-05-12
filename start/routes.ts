@@ -13,7 +13,7 @@ Route.group(() => {
 
   Route.group(() => {
     Route.post("/", "ProfilesController.createProfile");
-    Route.delete("/", "ProfilesController.deleteProfile");
+    Route.delete("/:mobile", "ProfilesController.deleteProfile");
     Route.put("/", "ProfilesController.updateProfile");
     Route.get("/", "ProfilesController.getProfile");
   }).prefix("/user/profile");
