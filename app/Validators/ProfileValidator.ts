@@ -16,7 +16,7 @@ class ProfileValidator {
 
     gender: schema.enum(["MALE", "FEMALE"], [rules.required()]),
 
-    dateOfBirth: schema.date({
+    birthDate: schema.date({
       format: "dd-MM-yyyy",
     }),
   });
@@ -36,7 +36,7 @@ class ProfileValidator {
 
     "gender.required": "gender in required",
 
-    "dateOfBirth.date": "date must be in  valid date format i.e : dd/MM/yyyy",
+    "birthDate.date": "date must be in  valid date format i.e : dd/MM/yyyy",
   };
 }
 export default ProfileValidator;
