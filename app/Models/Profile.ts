@@ -12,7 +12,7 @@ export default class Profile extends BaseModel {
   public name: string;
 
   @column({ columnName: "mobile" })
-  public mobileNumber: string;
+  public mobile: string;
 
   @column()
   public gender: string;
