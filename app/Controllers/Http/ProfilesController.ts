@@ -2,7 +2,6 @@ import ProfileValidator from "App/Validators/ProfileValidator";
 import Profile from "App/Models/Profile";
 import User from "App/Models/User";
 import moment from "moment";
-
 class ProfilesController {
   public async getProfile({ auth, response }) {
     try {
@@ -17,7 +16,7 @@ class ProfilesController {
         name: profile?.name,
         email: auth.user.id.email,
         gender: profile?.gender,
-        dateOfBirth: profile?.dateOfBirth.toLocaleDateString(),
+        birthDate: moment.utc(profile?.birthDate).format("DD/MM/YYYY"),
       };
 
       return response.json(userProfile);
@@ -28,7 +27,7 @@ class ProfilesController {
 
   public async createProfile({ request, response, auth }) {
     try {
-      const { name, mobile, gender, dateOfBirth } = await request.validate(
+      const { name, mobile, gender, birthDate } = await request.validate(
         ProfileValidator
       );
 
@@ -40,7 +39,7 @@ class ProfilesController {
 
       const duplicateMobileNumber = await Profile.findBy("mobile", mobile);
 
-      const date = moment(new Date(dateOfBirth), "DD-MM-YYYY");
+      const date = moment(new Date(birthDate), "DD-MM-YYYY");
 
       const today = moment();
 
@@ -53,15 +52,23 @@ class ProfilesController {
           message: "User with same mobile number exist",
         });
       }
-      const profile = await Profile.create({
+      await Profile.create({
         name,
         mobile,
         gender,
-        dateOfBirth,
+        birthDate,
         userId: auth.user.id,
       });
 
-      return response.status(201).json(profile);
+      const profile = await Profile.find(auth.user.id);
+      const formattedDate = moment.utc(profile?.birthDate).format("DD/MM/YYYY");
+      return response.status(201).json({
+        name: profile?.name,
+        mobile: profile?.mobile,
+        gender: profile?.gender,
+        birthDate: formattedDate,
+        userId: auth.user.id,
+      });
     } catch (error) {
       return response.status(400).json(error);
     }
@@ -76,8 +83,6 @@ class ProfilesController {
       if (mobile === Userprofile?.mobile) {
         const user = await User.findBy("id", Userprofile?.userId);
 
-        await Userprofile?.delete();
-
         await user?.delete();
 
         return response.json({
@@ -89,13 +94,13 @@ class ProfilesController {
     }
 
     return response.json({
-      message: "Mobile number not found",
+      message: "profile not found",
     });
   }
 
   public async updateProfile({ response, request, auth }) {
     try {
-      const { name, mobile, gender, dateOfBirth } = await request.validate(
+      const { name, mobile, gender, birthDate } = await request.validate(
         ProfileValidator
       );
 
@@ -121,10 +126,17 @@ class ProfilesController {
         name,
         mobile,
         gender,
-        dateOfBirth,
+        birthDate,
       });
       const updatedProfile = await Profile.findBy("user_id", auth.user.id);
-      return response.status(201).json(updatedProfile);
+
+      const userProfile = {
+        name: updatedProfile?.name,
+        mobile: updatedProfile?.mobile,
+        gender: updatedProfile?.gender,
+        birthDate: moment.utc(updatedProfile?.birthDate).format("DD/MM/YYYY"),
+      };
+      return response.status(201).json(userProfile);
     } catch (error) {
       return response.status(400).json(error);
     }
