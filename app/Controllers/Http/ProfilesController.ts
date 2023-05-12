@@ -6,8 +6,7 @@ import moment from "moment";
 class ProfilesController {
   public async getProfile({ auth, response }) {
     try {
-      const userData = await auth.user.id;
-      const profile = await Profile.findBy("user_id", userData);
+      const profile = await Profile.findBy("user_id", auth.user.id);
 
       if (profile === null) {
         return response.json({
@@ -16,7 +15,7 @@ class ProfilesController {
       }
       const userProfile = {
         name: profile?.name,
-        email: userData.email,
+        email: auth.user.id.email,
         gender: profile?.gender,
         dateOfBirth: profile?.dateOfBirth.toLocaleDateString(),
       };
@@ -29,23 +28,17 @@ class ProfilesController {
 
   public async createProfile({ request, response, auth }) {
     try {
-      const userData = await auth.user.id;
+      const { name, mobile, gender, dateOfBirth } = await request.validate(
+        ProfileValidator
+      );
 
-      const { name, mobileNumber, gender, dateOfBirth } =
-        await request.validate(ProfileValidator);
-
-      const existing = await Profile.findBy("user_id", userData);
+      const existing = await Profile.findBy("user_id", auth.user.id);
 
       if (existing !== null) {
-        return response.json({
-          message: "User profile is already created",
-        });
+        return response.json(existing);
       }
 
-      const duplicateMobileNumber = await Profile.findBy(
-        "mobile",
-        mobileNumber
-      );
+      const duplicateMobileNumber = await Profile.findBy("mobile", mobile);
 
       const date = moment(new Date(dateOfBirth), "DD-MM-YYYY");
 
@@ -62,10 +55,10 @@ class ProfilesController {
       }
       const profile = await Profile.create({
         name,
-        mobileNumber,
+        mobile,
         gender,
         dateOfBirth,
-        userId: userData,
+        userId: auth.user.id,
       });
 
       return response.status(201).json(profile);
@@ -74,13 +67,13 @@ class ProfilesController {
     }
   }
 
-  public async deleteProfile({ request, auth, response }) {
-    const { mobileNumber } = await request.validate(ProfileValidator);
+  public async deleteProfile({ params, auth, response }) {
+    const mobile = params.mobile;
 
     const Userprofile = await Profile.findBy("user_id", auth.user.id);
 
     try {
-      if (mobileNumber === Userprofile?.mobileNumber) {
+      if (mobile === Userprofile?.mobile) {
         const user = await User.findBy("id", Userprofile?.userId);
 
         await Userprofile?.delete();
@@ -102,39 +95,36 @@ class ProfilesController {
 
   public async updateProfile({ response, request, auth }) {
     try {
-      const { name, mobileNumber, gender, dateOfBirth } =
-        await request.validate(ProfileValidator);
+      const { name, mobile, gender, dateOfBirth } = await request.validate(
+        ProfileValidator
+      );
 
-      const userId = auth.user.id;
+      const existingProfile = await Profile.findBy("user_id", auth.user.id);
 
-      const existingProfile = await Profile.findBy("user_id", userId);
-
-      if (!existingProfile) {
+      if (existingProfile === null) {
         return response.status(400).json({
-          message: "Profile is not yet created",
+          message: "Profile not found",
         });
       }
 
-      if (existingProfile.mobileNumber !== mobileNumber) {
-        const DuplicateProfile = await Profile.findBy("mobile", mobileNumber);
+      if (existingProfile.mobile !== mobile) {
+        const DuplicateProfile = await Profile.findBy("mobile", mobile);
 
         if (DuplicateProfile !== null) {
           return response.status(400).json({
             message: "Mobile number already exists",
           });
         }
-      } else {
-        await Profile.query().where("user_id", userId).update({
-          name,
-          mobileNumber,
-          gender,
-          dateOfBirth,
-        });
-
-        return response.status(200).json({
-          message: "Updated user Successfully",
-        });
       }
+
+      await Profile.query().where("user_id", auth.user.id).update({
+        name,
+        mobile,
+        gender,
+        dateOfBirth,
+      });
+      const updatedProfile = await Profile.findBy("user_id", auth.user.id);
+      return response.status(201).json(updatedProfile);
     } catch (error) {
       return response.status(400).json(error);
     }
