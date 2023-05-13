@@ -7,7 +7,7 @@ import {
   hasOne,
   HasOne,
 } from "@ioc:Adonis/Lucid/Orm";
-import Profile from "./Profile";
+import UserProfile from "./UserProfile";
 
 export default class User extends BaseModel {
   @column({ isPrimary: true })
@@ -35,8 +35,8 @@ export default class User extends BaseModel {
     }
   }
 
-  @hasOne(() => Profile, {
+  @hasOne(() => UserProfile, {
     foreignKey: "user_id",
   })
-  public profile: HasOne<typeof Profile>;
+  public userProfile: HasOne<typeof UserProfile>;
 }
