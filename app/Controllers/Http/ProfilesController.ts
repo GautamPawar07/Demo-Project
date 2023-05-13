@@ -1,11 +1,11 @@
 import ProfileValidator from "App/Validators/ProfileValidator";
-import Profile from "App/Models/Profile";
+import UserProfile from "App/Models/UserProfile";
 import User from "App/Models/User";
 import moment from "moment";
 class ProfilesController {
   public async getProfile({ auth, response }) {
     try {
-      const profile = await Profile.findBy("user_id", auth.user.id);
+      const profile = await UserProfile.findBy("user_id", auth.user.id);
 
       if (profile === null) {
         return response.json({
@@ -31,13 +31,13 @@ class ProfilesController {
         ProfileValidator
       );
 
-      const existing = await Profile.findBy("user_id", auth.user.id);
+      const existing = await UserProfile.findBy("user_id", auth.user.id);
 
       if (existing !== null) {
         return response.json(existing);
       }
 
-      const duplicateMobileNumber = await Profile.findBy("mobile", mobile);
+      const duplicateMobileNumber = await UserProfile.findBy("mobile", mobile);
 
       const date = moment(new Date(birthDate), "DD-MM-YYYY");
 
@@ -47,12 +47,12 @@ class ProfilesController {
         return response.status(400).json({
           message: "Date entered is ahead of today's date",
         });
-      } else if (duplicateMobileNumber !== null) {
+      } else if (duplicateMobileNumber) {
         return response.status(400).json({
           message: "User with same mobile number exist",
         });
       }
-      await Profile.create({
+      await UserProfile.create({
         name,
         mobile,
         gender,
@@ -60,7 +60,7 @@ class ProfilesController {
         userId: auth.user.id,
       });
 
-      const profile = await Profile.find(auth.user.id);
+      const profile = await UserProfile.find(auth.user.id);
       const formattedDate = moment.utc(profile?.birthDate).format("DD/MM/YYYY");
       return response.status(201).json({
         name: profile?.name,
@@ -70,6 +70,8 @@ class ProfilesController {
         userId: auth.user.id,
       });
     } catch (error) {
+      console.log(error);
+
       return response.status(400).json(error);
     }
   }
@@ -77,7 +79,7 @@ class ProfilesController {
   public async deleteProfile({ params, auth, response }) {
     const mobile = params.mobile;
 
-    const Userprofile = await Profile.findBy("user_id", auth.user.id);
+    const Userprofile = await UserProfile.findBy("user_id", auth.user.id);
 
     try {
       if (mobile === Userprofile?.mobile) {
@@ -104,7 +106,7 @@ class ProfilesController {
         ProfileValidator
       );
 
-      const existingProfile = await Profile.findBy("user_id", auth.user.id);
+      const existingProfile = await UserProfile.findBy("user_id", auth.user.id);
 
       if (existingProfile === null) {
         return response.status(400).json({
@@ -113,7 +115,7 @@ class ProfilesController {
       }
 
       if (existingProfile.mobile !== mobile) {
-        const DuplicateProfile = await Profile.findBy("mobile", mobile);
+        const DuplicateProfile = await UserProfile.findBy("mobile", mobile);
 
         if (DuplicateProfile !== null) {
           return response.status(400).json({
@@ -122,13 +124,13 @@ class ProfilesController {
         }
       }
 
-      await Profile.query().where("user_id", auth.user.id).update({
+      await UserProfile.query().where("user_id", auth.user.id).update({
         name,
         mobile,
         gender,
         birthDate,
       });
-      const updatedProfile = await Profile.findBy("user_id", auth.user.id);
+      const updatedProfile = await UserProfile.findBy("user_id", auth.user.id);
 
       const userProfile = {
         name: updatedProfile?.name,
